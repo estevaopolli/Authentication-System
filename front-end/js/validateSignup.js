@@ -11,11 +11,12 @@ async function ValidateSignUP(){
     const newUser = {
     username: $username,
     email: $email,
-    password: $password
+    password: $password,
     };
 
     const response = await signup(newUser);
     const responseMessage = await response.json();
+    localStorage.setItem("token", responseMessage.token);
 
     if(!response.ok){
         switch (responseMessage.code){
@@ -52,7 +53,7 @@ async function ValidateSignUP(){
         }
     }
     else{
-        window.location.href = "./login.html"
+         window.location.href = "./login.html"
     }
 }
 

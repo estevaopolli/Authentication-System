@@ -23,3 +23,13 @@ export async function login(user){
     const responseMessage = await response.json();
     return responseMessage;
 }
+
+export async function verifyAuth(){
+    const token = localStorage.getItem("token");
+    const response = await fetch(`${API_URL}/profile`, {
+        headers: {
+            Authorization: `Bearer ${token}`
+        }
+    })
+    return response;
+}

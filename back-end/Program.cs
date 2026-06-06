@@ -6,12 +6,19 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Data.AppDbContext;
 using Models.User;
+using Services.AuthService;
+using System.Runtime.InteropServices;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Http.HttpResults;
+
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddDbContext<AppDbContext>();
+builder.Services.AddTransient<AuthService>();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
@@ -35,19 +42,15 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
-
+app.UseAuthorization();
+app.UseAuthentication();
 app.UseCors("PermitirFrontEnd");
 
-
-
-List<User> users = new();
-
-
-app.MapPost("/signup", async (User u, AppDbContext db) =>
+app.MapPost("/signup", async (User u, AppDbContext db, AuthService service) =>
 {
     var passwordHasher = new PasswordHasher<User>();
     string hash = passwordHasher.HashPassword(u, u.Password);
-    u.Password = hash;
+    
 
     if (string.IsNullOrEmpty(u.Username))
     {
@@ -57,9 +60,14 @@ app.MapPost("/signup", async (User u, AppDbContext db) =>
     {
         return Results.BadRequest(new {message = "E-mail inválido", code = "INVALID_EMAIL"});
     }
+
     if (string.IsNullOrEmpty(u.Password))
     {
         return Results.BadRequest(new {message = "Senha inválida", code = "INVALID_PASSWORD"});
+    }
+    else
+    {
+        u.Password = hash;
     }
 
     bool emailExists = await db.Users.AnyAsync(user => user.Email == u.Email);
@@ -67,7 +75,7 @@ app.MapPost("/signup", async (User u, AppDbContext db) =>
 
     if (userExists)
     {
-        return Results.BadRequest(new {message = "Email já existe", code = "USER_ALREADY_EXISTS"});
+        return Results.BadRequest(new {message = "Usuário já existe", code = "USER_ALREADY_EXISTS"});
     }
     else if (emailExists)
     {
@@ -75,14 +83,15 @@ app.MapPost("/signup", async (User u, AppDbContext db) =>
     }
     else
     {
+        var jwtToken = service.Generate(u);
         db.Users.Add(u);
 
         await db.SaveChangesAsync();
-        return Results.Ok(new {message="Usuário cadastrado com sucesso", code="SUCCESSFUL_REGISTRATION"});
+        return Results.Ok(new {message="Usuário cadastrado com sucesso", code="SUCCESSFUL_REGISTRATION", token = jwtToken});
     }
 });
 
-app.MapPost("/login", async (User u, AppDbContext db) =>
+app.MapPost("/login", async (User u, AppDbContext db, AuthService service) =>
 {
     var passwordHasher = new PasswordHasher<User>();
     var findingUser = await db.Users.FirstOrDefaultAsync(user => user.Email == u.Email);
@@ -98,6 +107,11 @@ app.MapPost("/login", async (User u, AppDbContext db) =>
     }
     return Results.BadRequest(new {message = "E-mail ou Senha incorretos", code = "INCORRECT_CREDENTIALS"});
 });
+
+app.MapGet("/profile", [Authorize(Roles = "User")]() =>
+{
+    return Results.Ok(new {message = "Usuário Autenticado!"});
+}).RequireAuthorization();
 
 app.Run();
 
