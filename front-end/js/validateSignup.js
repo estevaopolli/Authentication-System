@@ -53,7 +53,7 @@ async function ValidateSignUP(){
         }
     }
     else{
-         window.location.href = "./login.html"
+         window.location.href = "./dashboard.html"
     }
 }
 

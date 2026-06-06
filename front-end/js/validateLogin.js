@@ -18,6 +18,7 @@ async function ValidateLogin() {
             document.getElementById("incorrect-credentials-error").style.display = "block";
             break;
         case "SUCCESSFUL_VALIDATION":
+            localStorage.setItem("token", responseMessage.token);
             window.location.href = "./dashboard.html";
     }
     console.log(responseMessage.code);

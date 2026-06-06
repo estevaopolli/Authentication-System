@@ -7,10 +7,13 @@ using Microsoft.EntityFrameworkCore;
 using Data.AppDbContext;
 using Models.User;
 using Services.AuthService;
+using System.Text;
 using System.Runtime.InteropServices;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Http.HttpResults;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.IdentityModel.Tokens;
 
 
 var builder = WebApplication.CreateBuilder(args);
@@ -19,6 +22,21 @@ var builder = WebApplication.CreateBuilder(args);
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddDbContext<AppDbContext>();
 builder.Services.AddTransient<AuthService>();
+builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme).AddJwtBearer(options =>
+{
+    var secretKey = builder.Configuration["Jwt:Secret"];
+    var jwtKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(secretKey));
+    options.TokenValidationParameters = new TokenValidationParameters
+    {
+        ValidateIssuerSigningKey = true,
+        IssuerSigningKey = jwtKey,
+        ValidateIssuer = false,
+        ValidateAudience = false,
+        ValidateLifetime = true
+    };
+}
+);
+builder.Services.AddAuthorization();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
@@ -42,9 +60,9 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
-app.UseAuthorization();
-app.UseAuthentication();
 app.UseCors("PermitirFrontEnd");
+app.UseAuthentication();
+app.UseAuthorization();
 
 app.MapPost("/signup", async (User u, AppDbContext db, AuthService service) =>
 {
@@ -102,7 +120,9 @@ app.MapPost("/login", async (User u, AppDbContext db, AuthService service) =>
 
         if (passwordVerify == PasswordVerificationResult.Success)
         {
-            return Results.Ok(new {message = "Usuário validado com sucesso", code = "SUCCESSFUL_VALIDATION"});
+            var jwtToken = service.Generate(u);
+
+            return Results.Ok(new {message = "Usuário validado com sucesso", code = "SUCCESSFUL_VALIDATION", token = jwtToken});
         }
     }
     return Results.BadRequest(new {message = "E-mail ou Senha incorretos", code = "INCORRECT_CREDENTIALS"});
