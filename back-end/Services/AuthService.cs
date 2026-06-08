@@ -15,7 +15,7 @@ internal sealed class AuthService(IConfiguration configuration)
         var jwtKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(secretKey));
 
         var handler = new JwtSecurityTokenHandler();
-        var credentials = new SigningCredentials(jwtKey, SecurityAlgorithms.HmacSha256Signature);
+        var credentials = new SigningCredentials(jwtKey, SecurityAlgorithms.HmacSha256);
 
         var tokenDescriptor = new SecurityTokenDescriptor{
             Subject = GenerateClaims(user),

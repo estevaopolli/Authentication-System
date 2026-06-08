@@ -130,7 +130,7 @@ app.MapPost("/login", async (User u, AppDbContext db, AuthService service) =>
 
 app.MapGet("/profile", [Authorize(Roles = "User")]() =>
 {
-    return Results.Ok(new {message = "Usuário Autenticado!"});
+    return Results.Ok(new {message = "Usuário Autenticado como usuário!", code = "SUCCESSFUL_AUTHENTICATION"});
 }).RequireAuthorization();
 
 app.Run();

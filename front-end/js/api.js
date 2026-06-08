@@ -24,6 +24,11 @@ export async function login(user){
     return responseMessage;
 }
 
+export async function logout(user) {
+    localStorage.removeItem("token");
+    window.location.href = "./login.html";
+}
+
 export async function verifyAuth(){
     const token = localStorage.getItem("token");
     const response = await fetch(`${API_URL}/profile`, {

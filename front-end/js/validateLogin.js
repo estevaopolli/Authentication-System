@@ -1,4 +1,14 @@
-import { login } from "./api.js";
+import { login, verifyAuth } from "./api.js";
+
+try{
+    const authVerification = await verifyAuth();
+    if (authVerification.ok){
+        window.location.href = "./dashboard.html";
+    }
+}
+catch{
+    alert("Erro ao se conectar com o servidor!");
+}
 
 const $loginButton = document.querySelector("#login-button");
 $loginButton.addEventListener('click', ValidateLogin);

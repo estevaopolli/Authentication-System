@@ -1,7 +1,17 @@
-import { signup } from "./api.js";
+import { signup, verifyAuth } from "./api.js";
 
 const $signupButton = document.querySelector("#signup-button");
 $signupButton.addEventListener('click', ValidateSignUP);
+
+try{
+    const authVerification = await verifyAuth();
+    if (authVerification.ok){
+        window.location.href = "./dashboard.html";
+    }
+}
+catch{
+    alert("Erro ao se conectar com o servidor!");
+}
 
 async function ValidateSignUP(){
     const $username = document.querySelector("#username").value;
