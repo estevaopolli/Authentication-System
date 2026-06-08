@@ -13,15 +13,19 @@
             <h1>Login</h1>
         </div>
         <div>
-            <form>
+            <form id="loginForm">
                 <label for="email">Email</label> <br>
                 <input type="text" name="email" id="email"> <br> <br>
                 <label for="password">Password</label> <br>
-                <input type="password" name="password" id="password"> <br> <br>
+                <input type="password" name="password" id="password"> <br> 
 
                 <div class="error" id="incorrect-credentials-error">E-mail ou senha incorretos</div> <br>
-                <button id="login-button" class="button-solid" type="button">Entrar</button>
+                <button id="login-button" class="button-solid" type="submit">Entrar</button>
+
             </form> 
+        </div>
+        <div class="signup-link">
+            <a href="cadastro.html">Ainda não tem uma conta? <br> Cadastre-se</a>
         </div>
     </div>
 </body>

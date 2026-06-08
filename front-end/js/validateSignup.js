@@ -1,7 +1,10 @@
 import { signup, verifyAuth } from "./api.js";
 
-const $signupButton = document.querySelector("#signup-button");
-$signupButton.addEventListener('click', ValidateSignUP);
+const $signupForm = document.querySelector("#signupForm");
+$signupForm.addEventListener('submit', async (event) => {
+    event.preventDefault();
+    await ValidateSignUP();
+});
 
 try{
     const authVerification = await verifyAuth();

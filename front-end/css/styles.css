@@ -50,8 +50,22 @@ input{
 }
 
 .form-container{
+    align-items: center;
+    justify-items: center;
     padding: 20px;
     border: 0.5px solid black;
+}
+
+.signup-link{
+    padding: 10px;
+    justify-self: center;
+    text-align: center;
+}
+
+.login-link{
+    padding: 10px;
+    justify-self: center;
+    text-align: center;
 }
 
 .error{

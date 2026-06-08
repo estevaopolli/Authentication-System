@@ -10,8 +10,11 @@ catch{
     alert("Erro ao se conectar com o servidor!");
 }
 
-const $loginButton = document.querySelector("#login-button");
-$loginButton.addEventListener('click', ValidateLogin);
+const loginForm = document.querySelector('#loginForm');
+loginForm.addEventListener('submit', async (event) => {
+    event.preventDefault();
+    await ValidateLogin();
+});
 
 async function ValidateLogin() {
     const $email = document.querySelector("#email").value;
