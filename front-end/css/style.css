@@ -3,7 +3,7 @@ body{
     align-items: center;
     justify-content: center;
     height: 100vh;
-    background-color: #F7F7F7;
+    background-color: #171717;
     font-family: 'Lucida Sans', 'Lucida Sans Regular', 'Lucida Grande', 'Lucida Sans Unicode', Geneva, Verdana, sans-serif;
 }
 
@@ -11,7 +11,6 @@ h1{
     display: flex;
     justify-self: center;
     font-family: Arial, Helvetica, sans-serif;
-
 }
 
 button, input{
@@ -20,29 +19,48 @@ button, input{
 
 button{
     cursor: pointer;
-
 }
 
 input{
     padding: 5px;
     border-radius: 5px;
     border-width: thin;
+
+    margin-top: 5px;
+    margin-bottom: 15px;
+    color: #FFFFFF;
+    background-color: #171717;
+    border-color: #3d3d3d;
+    border-style: groove;
+}
+
+a{
+    color: #FFFFFF;
+    text-decoration: none;
 }
 
 .button-solid{
     display: flex;
     justify-self: center;
-    background-color: #0248BE;
+    justify-content: center;
+    align-items: center;
+
+    background-color: #66056e;
     color: #FFFFFF;
+
+    width: 195px;
+    height: 35px;
+
     font-size: 14px;
-    font-weight: 500;
+    font-weight: bold;
+
     padding: 10px;
     border-radius: 10px;
     border: none
 }
 
 .button-solid:hover{
-    background-color: #033589;
+    background-color: #48034e;
 }
 
 .button-solid:active{
@@ -50,25 +68,32 @@ input{
 }
 
 .form-container{
+    width: 15vw;
+    background-color: #212121;
+    color: #FFFFFF;
     align-items: center;
     justify-items: center;
     padding: 20px;
-    border: 0.5px solid black;
+    border-radius: 10px;
 }
 
-.signup-link{
+.forms-link{
+    font-size: 14px;
     padding: 10px;
     justify-self: center;
     text-align: center;
 }
 
-.login-link{
-    padding: 10px;
-    justify-self: center;
-    text-align: center;
+.forms-link p{
+    display: inline;
+}
+
+.forms-link a{
+    text-decoration: underline;
 }
 
 .error{
+    padding-top: 5px;
     color: red;
     display: none;
 }

@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="./css/styles.css">
+    <link rel="stylesheet" href="./css/style.css">
     <script src="js/validateSignup.js" type="module" defer></script>
     <title>Cadastro</title>
 </head>
@@ -15,24 +15,25 @@
         <div>
             <form id="signupForm">
                 <label for="username">Nome</label> <br>
-                <input type="text" id="username" name="username" required> <br>
+                <input type="text" id="username" name="username" placeholder="Digite seu nome" required> <br>
                 <div class="error" id="invalid-user-error">Informe um nome válido!</div>
                 <div class="error" id="used-user-error">Esse usuário já existe</div>
 
-                <label for="email">Email</label> <br>
-                <input type="text" id="email" name="email" required> <br>
+                <label for="email">E-mail</label> <br>
+                <input type="text" id="email" name="email" placeholder="Digite seu E-mail" required> <br>
                 <div class="error" id="invalid-email-error">Informe um E-mail válido!</div>
                 <div class="error" id="used-email-error">E-mail já cadastrado</div>
 
                 <label for="password">Senha</label> <br>
-                <input type="password" id="password" name="password" required> <br> <br>
+                <input type="password" id="password" name="password" placeholder="Digite sua senha" required> <br>
                 <div class="error" id="invalid-password-error">Senha inválida!</div>
 
                 <button id="signup-button" class="button-solid" type="submit">Cadastre-se</button>
             </form>
         </div>
-        <div class="login-link">
-            <a href="login.html">Já tem uma conta? <br> Entre</a>
+        <div class="forms-link">
+            <p>Já tem uma conta?</p>
+            <a href="login.html">Entre</a>
         </div>
     </div>
 </body>
