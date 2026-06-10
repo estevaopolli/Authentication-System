@@ -1,4 +1,4 @@
-const API_URL = "https://localhost:7252";
+const API_URL = "http://192.168.1.3:5252";
 
 export async function signup(newUser){
     const response = await fetch(`${API_URL}/signup`, {
@@ -29,6 +29,30 @@ export async function logout(user) {
     window.location.href = "./login.html";
 }
 
+export async function generateCode(RecoverUser) {
+    const response = await fetch(`${API_URL}/recover`, {
+        method: 'post',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({Email: RecoverUser})
+    })
+    const responseMessage = await response.json();
+    return responseMessage;
+}
+
+export async function sendCode(code) {
+        const response = await fetch(`${API_URL}/code`, {
+        method: 'post',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(code)
+    })
+    const responseMessage = await response.json();
+    return responseMessage;
+}
+
 export async function verifyAuth(){
     const token = localStorage.getItem("token");
     const response = await fetch(`${API_URL}/profile`, {
@@ -38,3 +62,4 @@ export async function verifyAuth(){
     })
     return response;
 }
+

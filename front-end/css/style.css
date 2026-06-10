@@ -48,6 +48,7 @@ a{
     justify-content: center;
     align-items: center;
 
+    color: #FFFFFF;
     background-color: #66056e;
 
     width: 195px;
@@ -96,5 +97,9 @@ a{
 .error{
     padding-top: 5px;
     color: red;
+    display: none;
+}
+
+#send-code-form{
     display: none;
 }

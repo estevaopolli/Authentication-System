@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="./css/style.css">
+    <script src="js/validateRecover.js" type="module" defer></script>
+    <title>Cadastro</title>
+</head>
+<body>
+    <div id="recover-box" class="form-container">
+        <div>
+            <h1>Recuperar Senha</h1>
+        </div>
+        <form id="get-code-form">
+            <label for="email">Email</label> <br>
+            <input type="text" placeholder="Digite seu email" name="email" id="email"> <br>
+            <button id="get-code-btn" class="button-solid" type="submit">Receber Código</button>
+        </form>
+        
+        <form id="send-code-form">
+                <label for="token">Código</label> <br>
+                <input type="number" placeholder="Digite o código" name="token" id="token"> <br>
+                <label for="new-password">Nova Senha</label> <br>
+                <input type="password" name="new-password" id="new-password"> <br>
+                <label for="confirmate-new-password">Confirme a senha</label> <br>
+                <input type="password" name="confirmate-new-password" id="confirmate-new-password">
+                <button id="send-code-btn" class="button-solid" type="submit">Receber Código</button>
+        </form>
+            
+        </form>
+        <div class="forms-link">
+            <a href="login.html">Voltar</a>
+        </div>
+    </div>
+</body>
+</html>

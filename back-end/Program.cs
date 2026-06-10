@@ -1,20 +1,20 @@
-using System.Net.Mail;
-using System.Reflection.Metadata;
-using System.Security.Cryptography.X509Certificates;
-using System.Security.Permissions;
+
+using System.Security.Cryptography;
+using System.Threading.RateLimiting;
+using System.Text;
+
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
+using Microsoft.AspNetCore.RateLimiting;
+
+using Services.AuthService;
+
 using Data.AppDbContext;
 using Models.User;
-using Services.AuthService;
-using System.Text;
-using System.Runtime.InteropServices;
-using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Http.HttpResults;
-using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.IdentityModel.Tokens;
-
+using Microsoft.AspNetCore.Identity.Data;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -22,6 +22,7 @@ var builder = WebApplication.CreateBuilder(args);
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddDbContext<AppDbContext>();
 builder.Services.AddTransient<AuthService>();
+
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme).AddJwtBearer(options =>
 {
     var secretKey = builder.Configuration["Jwt:Secret"];
@@ -36,6 +37,19 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme).AddJw
     };
 }
 );
+
+builder.Services.AddRateLimiter(options =>
+{
+    options.AddFixedWindowLimiter("fixed", opt =>
+    {
+        opt.PermitLimit = 4;
+        opt.Window = TimeSpan.FromSeconds(12);
+        opt.QueueProcessingOrder = QueueProcessingOrder.OldestFirst;
+        opt.QueueLimit = 2;
+    });
+});
+
+
 builder.Services.AddAuthorization();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
@@ -63,6 +77,7 @@ app.UseHttpsRedirection();
 app.UseCors("PermitirFrontEnd");
 app.UseAuthentication();
 app.UseAuthorization();
+app.UseRateLimiter();
 
 app.MapPost("/signup", async (User u, AppDbContext db, AuthService service) =>
 {
@@ -126,7 +141,22 @@ app.MapPost("/login", async (User u, AppDbContext db, AuthService service) =>
         }
     }
     return Results.BadRequest(new {message = "E-mail ou Senha incorretos", code = "INCORRECT_CREDENTIALS"});
-});
+}).RequireRateLimiting("fixed");
+
+app.MapPost("/recover", async (Models.Recover.RecoverUser recoverUser, AppDbContext db) =>
+{
+    bool emailExists = await db.Users.AnyAsync(user => user.Email == recoverUser.Email);
+    Console.WriteLine(emailExists);
+    if (emailExists)
+    {
+        string resetToken = RandomNumberGenerator.GetInt32(100000, 999999).ToString();
+        return Results.Ok(new {message = "Email existe", codigo = resetToken});
+    }
+    else
+    {
+        return Results.NotFound(new {message = "Email não existe"});
+    }
+}).RequireRateLimiting("fixed");
 
 app.MapGet("/profile", [Authorize(Roles = "User")]() =>
 {
