@@ -7,7 +7,7 @@ try {
     $logoutBtn.addEventListener('click', logout);
 
     if (authVerification.ok){
-        $authTitle.textContent = "Autenticado!"
+        document.querySelector("#notAuth").hidden = true;
         document.querySelector("#dashboard").hidden = false;
 
     }else{

@@ -8,9 +8,14 @@
     <script src="js/dashboard.js" type="module"></script>
 </head>
 <body>
-    <h1 id="Auth">Carregando...</h1>
+    <div id="notAuth">
+        <h1 id="Auth">Carregando...</h1>
+    </div>
     <div id="dashboard" hidden>
-        <button id="logoutBtn">Sair</button>
+        <div class="form-container">
+            <h1>Autenticado!</h1>
+            <button id="logoutBtn" class="button-solid">Sair</button>
+        </div>
     </div>
 </body>
 </html>
