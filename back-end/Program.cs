@@ -152,9 +152,10 @@ app.MapPost("/recover", async (RecoverUser recoverUser, AppDbContext db) =>
     {
         string resetToken = RandomNumberGenerator.GetInt32(100000, 999999).ToString();
         string resetTokenHash = Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(resetToken)));
+        user.resetTokenTimer = DateTime.UtcNow.AddMinutes(15);
+        user.resetTokenAttempts = 0;
         user.ResetToken = resetTokenHash;
         await db.SaveChangesAsync();
-
         return Results.Ok(new {message = "Email existe", resetToken = resetToken, code = "RESET_CODE_GENERATED"});
     }
     else
@@ -166,7 +167,10 @@ app.MapPost("/recover", async (RecoverUser recoverUser, AppDbContext db) =>
 app.MapPost("/reset-password", async (RecoverUser recoverUser, AppDbContext db) =>
 {
     var user = await db.Users.FirstOrDefaultAsync(user => user.Email == recoverUser.Email);
-
+    if(user == null)
+    {
+        return Results.NotFound(new {message = "Usuário não encontrado", code = "USER_NOT_FOUND"});
+    }
     if (string.IsNullOrEmpty(recoverUser.ResetToken))
     {
         return Results.BadRequest(new {message = "Código Inválido", code = "INVALID_RESET_TOKEN"});
@@ -181,20 +185,39 @@ app.MapPost("/reset-password", async (RecoverUser recoverUser, AppDbContext db) 
     }
 
     string receivedTokenHash = Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(recoverUser.ResetToken)));
-    Console.WriteLine("degub");
-    if(receivedTokenHash == user.ResetToken)
+
+    if(receivedTokenHash == user.ResetToken && DateTime.UtcNow < user.resetTokenTimer && user.resetTokenAttempts < 5)
     {
         var newPasswordHasher = new PasswordHasher<RecoverUser>();
         string hash = newPasswordHasher.HashPassword(recoverUser, recoverUser.NewPassword);
         user.Password = hash;
+        user.ResetToken = null;
         await db.SaveChangesAsync();
         return Results.Ok(new {message="Senha alterada com sucesso", code = "SUCCESSFUL_PASSWORD_RESET"});
     }
+
     else
     {
+        user.resetTokenAttempts++;
+        await db.SaveChangesAsync();
+        if(user.resetTokenAttempts >= 5 && receivedTokenHash == user.ResetToken)
+        {
+            user.ResetToken = null;
+            await db.SaveChangesAsync();
+            return Results.BadRequest(new {message="Código bloqueado, muitas tentativas incorretas", code = "RESET_TOKEN_BLOCKED"});
+        }
+
+        if(user.resetTokenTimer >= DateTime.UtcNow && receivedTokenHash == user.ResetToken)
+        {
+            user.ResetToken = null;
+            await db.SaveChangesAsync();
+            return Results.BadRequest(new {message="Código expirado", code = "RESET_TOKEN_EXPIRED"});
+        }
+
+        await db.SaveChangesAsync();
         return Results.BadRequest(new {message="Código Inválido", code = "INVALID_RESET_TOKEN"});
     }
-});
+}).RequireRateLimiting("fixed");
 
 app.MapGet("/profile", [Authorize(Roles = "User")]() =>
 {

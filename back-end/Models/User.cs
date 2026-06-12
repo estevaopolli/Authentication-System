@@ -1,3 +1,5 @@
+using Microsoft.Identity.Client;
+
 namespace Models.User;
 public class User
 {
@@ -7,4 +9,6 @@ public class User
     public string Password {get; set;} = "";
     public string Role {get; set;} = "User";
     public string? ResetToken {get; set;} = "";
+    public DateTime? resetTokenTimer {get; set;} = DateTime.UtcNow;
+    public byte resetTokenAttempts {get; set;} = 0;
 }
