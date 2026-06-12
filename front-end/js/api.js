@@ -41,13 +41,13 @@ export async function generateCode(RecoverUser) {
     return responseMessage;
 }
 
-export async function sendCode(code) {
-        const response = await fetch(`${API_URL}/code`, {
+export async function sendPassword(newPassword) {
+        const response = await fetch(`${API_URL}/reset-password`, {
         method: 'post',
         headers: {
             'Content-Type': 'application/json'
         },
-        body: JSON.stringify(code)
+        body: JSON.stringify(newPassword)
     })
     const responseMessage = await response.json();
     return responseMessage;

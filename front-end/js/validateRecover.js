@@ -1,4 +1,4 @@
-import { generateCode, sendCode, verifyAuth } from "./api.js";
+import { generateCode, sendPassword, verifyAuth } from "./api.js";
 
 try{
     const authVerification = await verifyAuth();
@@ -16,24 +16,49 @@ let code;
 
 getCodeForm.addEventListener('submit', async (event) => {
     event.preventDefault();
-    code = await GetCode();
-    getCodeForm.style.display = "none";
-    sendCodeForm.style.display = "block";
+    const responseMessage = await GetCode();
+    console.log(responseMessage.code);
+    switch (responseMessage.code){
+        case "RESET_CODE_GENERATED":
+            getCodeForm.style.display = "none";
+            sendCodeForm.style.display = "block";
+            console.log(responseMessage.resetToken);
+            break;
+
+        case "EMAIL_NOT_FOUND":
+            document.getElementById("email-not-found-error").style.display = "block";
+            break;
+        default:
+            alert("Erro"); 
+    }
 });
 
 sendCodeForm.addEventListener('submit', async (event) => {
     event.preventDefault();
-    await SendCode(code);
+
+    const newPassword = {
+        Email: document.getElementById("email").value,
+        ResetToken: document.getElementById("token").value,
+        NewPassword: document.getElementById("new-password").value,
+        ConfirmNewPassword: document.getElementById("confirm-new-password").value
+    }
+
+    if(document.getElementById("new-password").value == document.getElementById("confirm-new-password").value){
+        await SendPassword(newPassword);
+
+    }else{
+        document.getElementById("passwords-dont-match").style.display = "block";
+    }
 })
 
 async function GetCode() {
     const $email = document.querySelector("#email").value;
 
     const responseMessage = (await generateCode($email));
-    return responseMessage.codigo;
+    return responseMessage;
 }
 
-async function SendCode(code) {
-    const responseMessage = (await sendCode(code));
-    console.log(responseMessage.message);
+async function SendPassword(newPassword) {
+    const responseMessage = (await sendPassword(newPassword));
+    return responseMessage;
 }

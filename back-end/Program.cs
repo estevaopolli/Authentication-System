@@ -14,6 +14,8 @@ using Services.AuthService;
 
 using Data.AppDbContext;
 using Models.User;
+using Models.Recover;
+
 using Microsoft.AspNetCore.Identity.Data;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -84,7 +86,6 @@ app.MapPost("/signup", async (User u, AppDbContext db, AuthService service) =>
     var passwordHasher = new PasswordHasher<User>();
     string hash = passwordHasher.HashPassword(u, u.Password);
     
-
     if (string.IsNullOrEmpty(u.Username))
     {
         return Results.BadRequest(new {message = "Usuário inválido", code = "INVALID_USERNAME"});
@@ -143,20 +144,57 @@ app.MapPost("/login", async (User u, AppDbContext db, AuthService service) =>
     return Results.BadRequest(new {message = "E-mail ou Senha incorretos", code = "INCORRECT_CREDENTIALS"});
 }).RequireRateLimiting("fixed");
 
-app.MapPost("/recover", async (Models.Recover.RecoverUser recoverUser, AppDbContext db) =>
+
+app.MapPost("/recover", async (RecoverUser recoverUser, AppDbContext db) =>
 {
-    bool emailExists = await db.Users.AnyAsync(user => user.Email == recoverUser.Email);
-    Console.WriteLine(emailExists);
-    if (emailExists)
+    var user = await db.Users.FirstOrDefaultAsync(user => user.Email == recoverUser.Email);
+    if (user != null)
     {
         string resetToken = RandomNumberGenerator.GetInt32(100000, 999999).ToString();
-        return Results.Ok(new {message = "Email existe", codigo = resetToken});
+        string resetTokenHash = Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(resetToken)));
+        user.ResetToken = resetTokenHash;
+        await db.SaveChangesAsync();
+
+        return Results.Ok(new {message = "Email existe", resetToken = resetToken, code = "RESET_CODE_GENERATED"});
     }
     else
     {
-        return Results.NotFound(new {message = "Email não existe"});
+        return Results.NotFound(new {message = "Email não existe", code = "EMAIL_NOT_FOUND"});
     }
 }).RequireRateLimiting("fixed");
+
+app.MapPost("/reset-password", async (RecoverUser recoverUser, AppDbContext db) =>
+{
+    var user = await db.Users.FirstOrDefaultAsync(user => user.Email == recoverUser.Email);
+
+    if (string.IsNullOrEmpty(recoverUser.ResetToken))
+    {
+        return Results.BadRequest(new {message = "Código Inválido", code = "INVALID_RESET_TOKEN"});
+    }
+    if (string.IsNullOrEmpty(recoverUser.NewPassword))
+    {
+        return Results.BadRequest(new {message = "Senha inválida", code = "INVALID_NEW_PASSWORD"});
+    }
+    if (recoverUser.NewPassword != recoverUser.ConfirmNewPassword)
+    {
+        return Results.BadRequest(new {message = "Senha não coincidem", code = "PASSWORDS_DONT_MATCH"});
+    }
+
+    string receivedTokenHash = Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(recoverUser.ResetToken)));
+    Console.WriteLine("degub");
+    if(receivedTokenHash == user.ResetToken)
+    {
+        var newPasswordHasher = new PasswordHasher<RecoverUser>();
+        string hash = newPasswordHasher.HashPassword(recoverUser, recoverUser.NewPassword);
+        user.Password = hash;
+        await db.SaveChangesAsync();
+        return Results.Ok(new {message="Senha alterada com sucesso", code = "SUCCESSFUL_PASSWORD_RESET"});
+    }
+    else
+    {
+        return Results.BadRequest(new {message="Código Inválido", code = "INVALID_RESET_TOKEN"});
+    }
+});
 
 app.MapGet("/profile", [Authorize(Roles = "User")]() =>
 {
